@@ -13,29 +13,33 @@ Hive table.
 
 ## Requirements
 
-[Maven](https://maven.apache.org/index.html) is required to build the funnel
-UDFs.需使用3.x版本，建议使用Orcale JDK进行编译。
+[Maven](https://maven.apache.org/index.html) is required to build the funnel UDFs.
+
+需使用3.x版本，建议使用Orcale JDK进行编译。
 
 ## How to build
 
 There is a provided `Makefile` with all the build targets.
+
 pom.xml文件可能需要修改的几个地方：
-    <properties>
+
+```
+        <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <hive.version>对应的hive版本</hive.version>
         <hadoop.version>1.2.1</hadoop.version>
-    </properties>
+        </properties>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5</version>
-                <configuration>
-                    <source>1.7 编译机器的JDK版本</source>
-                    <target>1.7 Hadoop集群的JDK版本</target>
-                </configuration>
-            </plugin>
-
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.5</version>
+            <configuration>
+                <source>1.7 <-- 编译机器的JDK版本</source>
+                <target>1.7 <-- Hadoop集群的JDK版本</target>
+            </configuration>
+        </plugin>
+```
 
 ### Build JAR
 
@@ -127,9 +131,11 @@ Assume a table `user_data`:
 
 根据上面的示例数据，创建hive表，加载示例数据：
 
-CREATE TABLE test_table(action string, timestamp int, user_id int, gender string)  row format delimited fields terminated by '\t';
-
+```
+CREATE TABLE test_table(action string, timestamp int, user_id int, gender string)
+       ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';
 LOAD DATA LOCAL INPATH '/tmp/test.csv' OVERWRITE INTO TABLE test_table;
+```
 
 #### Simple funnel: `(signup OR email_signup) -> confirm -> submit`
 

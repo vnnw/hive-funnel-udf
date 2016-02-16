@@ -14,11 +14,28 @@ Hive table.
 ## Requirements
 
 [Maven](https://maven.apache.org/index.html) is required to build the funnel
-UDFs.
+UDFs.需使用3.x版本，建议使用Orcale JDK进行编译。
 
 ## How to build
 
 There is a provided `Makefile` with all the build targets.
+pom.xml文件可能需要修改的几个地方：
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <hive.version>对应的hive版本</hive.version>
+        <hadoop.version>1.2.1</hadoop.version>
+    </properties>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5</version>
+                <configuration>
+                    <source>1.7 编译机器的JDK版本</source>
+                    <target>1.7 Hadoop集群的JDK版本</target>
+                </configuration>
+            </plugin>
+
 
 ### Build JAR
 
@@ -108,6 +125,12 @@ Assume a table `user_data`:
 | decline             | 200       | 3       | f      |
 | ...                 | ...       | ...     | ...    |
 
+根据上面的示例数据，创建hive表，加载示例数据：
+
+CREATE TABLE test_table(action string, timestamp int, user_id int, gender string)  row format delimited fields terminated by '\t';
+
+LOAD DATA LOCAL INPATH '/tmp/test.csv' OVERWRITE INTO TABLE test_table;
+
 #### Simple funnel: `(signup OR email_signup) -> confirm -> submit`
 
 ```sql
@@ -115,7 +138,7 @@ SELECT funnel_merge(funnel)
 FROM (SELECT funnel(action, timestamp, array('signup_page', 'email_signup'),
                                        array('confirm_button'),
                                        array('submit_button')) AS funnel
-      FROM user_data
+      FROM test_table
       GROUP BY user_id) t1;
 ```
 
@@ -128,7 +151,7 @@ SELECT funnel_percent(funnel_merge(funnel))
 FROM (SELECT funnel(action, timestamp, array('signup_page'),
                                        array('confirm_button'),
                                        array('submit_button')) AS funnel
-      FROM user_data
+      FROM test_table
       GROUP BY user_id) t1;
 ```
 
@@ -142,9 +165,12 @@ FROM (SELECT gender,
              funnel(action, timestamp, array('signup_page'),
                                        array('confirm_button'),
                                        array('submit_button')) AS funnel
-      FROM table
-      GROUP BY user_id, gender) t1;
+      FROM test_table
+      GROUP BY user_id, gender) t1
+GROUP BY gender;
 ```
+注：Yahoo Github上的HQL示例，语法有误，应该还要在外层添加一个GROUP BY gender;
+
 
 Result: `m: [1, 0, 0], f: [2, 2, 1]`
 
@@ -157,7 +183,7 @@ FROM (SELECT funnel(action, timestamp, array('signup_page'),
                                        array('submit_button')) AS funnel1
              funnel(action, timestamp, array('signup_page'),
                                        array('decline')) AS funnel2
-      FROM table
+      FROM test_table
       GROUP BY user_id) t1;
 ```
 

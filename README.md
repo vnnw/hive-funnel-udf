@@ -15,13 +15,13 @@ Hive table.
 
 [Maven](https://maven.apache.org/index.html) is required to build the funnel UDFs.
 
-需使用3.x版本，建议使用Orcale JDK进行编译。
+需使用Maven 3.x版本，建议使用Oracle JDK进行编译。
 
 ## How to build
 
 There is a provided `Makefile` with all the build targets.
 
-pom.xml文件可能需要修改的几个地方：
+pom.xml文件需根据情况，修改相应的几个地方：
 
 ```
         <properties>
